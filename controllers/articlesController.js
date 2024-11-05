@@ -245,7 +245,7 @@ const listArticles = asyncHandler(async (req, res) => {
     if (req.query.favorited) {
         const favoriter = await User.findOne({username: req.query.favorited}).catch(e => log.debug(e, "User not Found"))
         if (favoriter) {
-            query.id = {$in: favoriter.favouriteArticles}
+            query.id = {$in: favoriter.favoritedArticles}
         }
     }
     const {rows : filteredArticles} = await Article.find(query,{limit: Number(limit), skip: Number(offset), sort: {createdAt: 'DESC'}  });
