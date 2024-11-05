@@ -1,12 +1,13 @@
+const ottoman = require('../services/clients/couchbaseClient');
 const { Schema, model, getModel } = require('ottoman');
 const slugify = require('slugify');
 
-const articleSchema = new Schema({
+const articleModel = ottoman.model('Article', {
     slug: {
         type: String,
         unique: true,
         lowercase: true,
-        index: true
+        index: true,
     },
     title: {
         type: String,
@@ -14,34 +15,43 @@ const articleSchema = new Schema({
     },
     description: {
         type: String,
-        required: true
+        required: true,
     },
     body: {
         type: String,
-        required: true
+        required: true,
     },
-    tagList: {default: () => [],type : [{
-        type: String
-    }]},
-    author: {type: String, ref : 'User'},
-    favouritesCount: {
+    tagList: {
+        type: [{ type: String, ref: 'Tag' }],
+        default: () => [],
+    },
+    author: {
+        type: String,
+        ref: 'User',
+    },
+    favoritesCount: {
         type: Number,
-        default: 0
+        default: 0,
     },
-    comments: {default: () => [], type:[{type: String, ref: 'Comment'}]}
-
+    comments: {
+        type: [{ type: String, ref: 'Comment' }],
+        default: () => [],
+    },
+    embedding: {
+        type: [Number],
+    },
 }, {
-    timestamps: true
+    timestamps: true,
 });
 
 // TODO: Implement uniqueValidator
-// articleSchema.plugin(uniqueValidator);
-articleSchema.pre('update', function(document){
+// articleModel.plugin(uniqueValidator);
+articleModel.pre('update', function(document){
     document.slug = slugify(document.title, { lower: true, replacement: '-'});
 });
 
 // user is the logged-in user
-articleSchema.methods.toArticleResponse = async function (user) {
+articleModel.methods.toArticleResponse = async function (user) {
     const User = getModel('User');
     const authorObj = await User.findById(this.author);
     return {
@@ -53,20 +63,20 @@ articleSchema.methods.toArticleResponse = async function (user) {
         createdAt: this.createdAt,
         updatedAt: this.updatedAt,
         tagList: this.tagList,
-        favorited: user ? user.isFavourite(this.id) : false,
-        favoritesCount: this.favouritesCount,
+        favorited: user ? user.isFavorite(this.id) : false,
+        favoritesCount: this.favoritesCount,
         author:  authorObj.toProfileJSON(user)
     }
 }
 
-articleSchema.methods.addComment = async function (commentId) {
+articleModel.methods.addComment = async function (commentId) {
     if(this.comments.indexOf(commentId) === -1){
         this.comments.push(commentId);
     }
     return this.save();
 };
 
-articleSchema.methods.removeComment = async function (commentId) {
+articleModel.methods.removeComment = async function (commentId) {
     const idx = this.comments.indexOf(commentId);
     if(idx!== -1){
         this.comments.splice(idx, 1);
@@ -76,6 +86,6 @@ articleSchema.methods.removeComment = async function (commentId) {
 };
 
 const scope = process.env.DB_SCOPE || "_default";
-const article =  model('Article', articleSchema, { scopeName: scope });
-exports.articleSchema = articleSchema;
+const article =  model('Article', articleModel, { scopeName: scope });
+exports.articleModel = articleModel;
 exports.Article = article;

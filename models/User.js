@@ -1,3 +1,4 @@
+const ottoman = require('../services/clients/couchbaseClient');
 const { Schema, model, getModel,addValidators } = require('ottoman');
 const jwt = require("jsonwebtoken");
 const accessTokenSecret = require('../config/securityConfig');
@@ -9,46 +10,51 @@ addValidators({
           throw new PropertyRequiredError("username");
         }
     },
-  });
+});
 
-const userSchema = new Schema({
+const userModel = ottoman.model('User', { 
     username: {
-        type: String,
-        required: true,
-        unique: true,
-        validator: 'username'
+        type: String, 
+        required: true, 
+        unique: true, 
+        validator: 'username',
     },
     password: {
         type: String,
-        required: true
+        required: true, 
     },
     email: {
         type: String,
         required: true,
         unique: true,
-        validator: { regexp: emailRegX, message: 'email invalid' } ,
-        index: true
+        validator: { regexp: emailRegX, message: 'Invalid email' },
+        index: true,
     },
     bio: {
         type: String,
-        default: ""
+        default: "",
     },
     image: {
         type: String,
-        default: ""
+        default: "",
     },
-    favouriteArticles: {default: ()=> [], type: [{type: String, ref: 'Article'}]},
-    followingUsers: {default: () => [], type:[{type: String, ref: 'User'}]}
-},
-    {
-        timestamps: true
-    });
+    favoritedArticles: {
+        type: [{ type: String, ref: 'Article' }],
+        default: () => [],
+    },
+    followingUsers: {
+        type: [{ type: String, ref: 'User' }],
+        default: () => [],
+    },
+}, {
+    timestamps: true,
+});
 
 // userSchema.plugin(uniqueValidator);
 
 // @desc generate access token for a user
 // @required valid email and password
-userSchema.methods.generateAccessToken = function() {
+userModel.methods.generateAccessToken = function() {
     const accessToken = jwt.sign({
             "user": {
                 "id": this.id,
@@ -62,7 +68,7 @@ userSchema.methods.generateAccessToken = function() {
     return accessToken;
 }
 
-userSchema.methods.toUserResponse = function() {
+userModel.methods.toUserResponse = function() {
     return {
         username: this.username,
         email: this.email,
@@ -72,7 +78,7 @@ userSchema.methods.toUserResponse = function() {
     }
 };
 
-userSchema.methods.toProfileJSON = function (user) {
+userModel.methods.toProfileJSON = function (user) {
     return {
         username: this.username,
         bio: this.bio,
@@ -81,7 +87,7 @@ userSchema.methods.toProfileJSON = function (user) {
     }
 };
 
-userSchema.methods.isFollowing = function (id) {
+userModel.methods.isFollowing = function (id) {
     const idStr = id.toString();
     if (this.followingUsers) {
         for (const followingUser of this.followingUsers) {
@@ -93,14 +99,14 @@ userSchema.methods.isFollowing = function (id) {
     return false;
 };
 
-userSchema.methods.follow = function (id) {
+userModel.methods.follow = function (id) {
     if(this.followingUsers.indexOf(id) === -1){
         this.followingUsers.push(id);
     }
     return this.save();
 };
 
-userSchema.methods.unfollow = function (id) {
+userModel.methods.unfollow = function (id) {
     const idx = this.followingUsers.indexOf(id);
     if(idx !== -1){
         this.followingUsers.splice(idx, 1);
@@ -108,10 +114,10 @@ userSchema.methods.unfollow = function (id) {
     return this.save();
 };
 
-userSchema.methods.isFavourite = function (id) {
+userModel.methods.isFavorite = function (id) {
     const idStr = id.toString();
-    if (this.favouriteArticles) {
-        for (const article of this.favouriteArticles) {
+    if (this.favoritedArticles) {
+        for (const article of this.favoritedArticles) {
             if (article.toString() === idStr) {
                 return true;
             }
@@ -120,33 +126,33 @@ userSchema.methods.isFavourite = function (id) {
     return false;
 }
 
-userSchema.methods.favorite = async function (id) {
-    if(this.favouriteArticles.indexOf(id) === -1){
-        this.favouriteArticles.push(id);
+userModel.methods.favorite = async function (id) {
+    if(this.favoritedArticles.indexOf(id) === -1){
+        this.favoritedArticles.push(id);
     }
 
     const article = await getModel('Article').findById(id);
 
-    article.favouritesCount += 1;
+    article.favoritesCount += 1;
     await this.save();
 
     return article.save();
 }
 
-userSchema.methods.unfavorite = async  function (id) {
-    const idx = this.favouriteArticles.indexOf(id);
+userModel.methods.unfavorite = async  function (id) {
+    const idx = this.favoritedArticles.indexOf(id);
     if(idx !== -1){
-        this.favouriteArticles.splice(idx, 1);
+        this.favoritedArticles.splice(idx, 1);
     }
 
     const article = await getModel('Article').findById(id);
-    article.favouritesCount -= 1;
+    article.favoritesCount -= 1;
     await this.save();
 
     return article.save();
 };
 
 const scope = process.env.DB_SCOPE || "_default";
-const User =  model('User', userSchema, { scopeName: scope });
-exports.userSchema = userSchema;
+const User =  model('User', userModel, { scopeName: scope });
+exports.userModel = userModel;
 exports.User = User;

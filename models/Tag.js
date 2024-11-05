@@ -1,18 +1,28 @@
-const mongoose = require('mongoose');
-const uniqueValidator = require('mongoose-unique-validator');
+const ottoman = require('../services/clients/couchbaseClient');
+const { Schema, model, getModel } = require('ottoman');
 
-const tagSchema = new mongoose.Schema({
+const tagModel = ottoman.model('Tag', {
     tagName: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
     },
-    articles: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Article'
-    }]
-})
+    articles: {
+        type: [{ type: String, ref: 'Article' }],
+        default: () => [],
+    },
+}, {
+    timestamps: true,
+});
 
-tagSchema.plugin(uniqueValidator);
+tagModel.methods.toTagResponse = function() {
+    return {
+        tagName: this.tagName,
+        articles: this.articles
+    }
+}
 
-module.exports = mongoose.model('Tag', tagSchema);
+const scope = process.env.DB_SCOPE || "_default";
+module.exports = { 
+    Tag: model('Tag', tagModel, { scopeName: scope }), tagModel: tagModel
+};
