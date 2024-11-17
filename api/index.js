@@ -8,6 +8,8 @@ const cors = require('cors');
 const corsOptions = require('../config/corsOptions');
 const {setupOttoman} = require('../config/dbConnect');
 const  {Logger} = require('../config/logger');
+const searchRoutes = require('./routes/searchRoutes');
+
 const log = Logger.child({
     namespace: 'Index',
 });
@@ -45,6 +47,10 @@ const main = async () => {
     // comment routes
     app.use('/api/articles/:articleId/comments', require('../routes/commentRoutes'));
     console.log("Comment routes set up.");
+
+    // search routes
+    app.use('/api/search', searchRoutes);
+    console.log("Search routes set up.");
   
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
