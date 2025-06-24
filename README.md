@@ -1,31 +1,58 @@
-# ![RealWorld Example App](logo.png)
+# Chapter 5: Structuring the Backend for Vector Search
 
-> ### Express.js + Couchbase + JavaScript codebase containing real world examples (CRUD, auth, advanced patterns, etc) that adheres to the [RealWorld](https://github.com/gothinkster/realworld) spec and API.
+## Chapter Navigation
 
-This is a fork of https://github.com/winterrrrrff/realWorld-server, using Couchbase and Ottoman.js instead of MongoDB and Mongoose.
+| Chapter | Branch | Description |
+|---------|--------|-------------|
+| 1 | `chapter-1` | Getting Started with Vector Search |
+| 2 | `chapter-2` | Understanding Vector Search |
+| 3 | `chapter-3` | Generating Vector Embeddings |
+| 4 | `chapter-4` | Building the Foundation for Vector Search |
+| 5 | `chapter-5` | Structuring the Backend for Vector Search |
+| 6 | `chapter-6` | Building the Vector Embedding Generation Service |
+| 7 | `chapter-7` | Creating a Vector Search Service |
+| 8 | `chapter-8` | Creating a Vector Search Index |
+| 9 | `chapter-9` | Incorporating Vector Search Functionality |
+| 10 | `chapter-10` | Optimizing Search Results |
+| 11 | `chapter-11` | Key Takeaways and Practical Applications |
+| Main | `main` | Complete App |
 
+---
 
-### [Demo](https://demo.realworld.io/)&nbsp;&nbsp;&nbsp;&nbsp;[RealWorld](https://github.com/gothinkster/realworld)
+## About This Chapter
 
+This branch focuses on structuring the backend for vector search. In this chapter, you will:
+- Review the backend architecture for the RealWorld blogging platform.
+- Define and document the data models (User, Article, Comment, Tag) using Ottoman.js for Couchbase.
+- Prepare the backend for future vector search and embedding features.
 
-This codebase was created to demonstrate a fully fledged fullstack application built with **Express.js + Couchbase + JavaScript** including CRUD operations, authentication, routing, pagination, and more.
+---
 
-We've gone to great lengths to adhere to the **Express.js + Couchbase + JavaScript** community styleguides & best practices.
+## Setup Instructions
 
-For more information on how to this works with other frontends/backends, head over to the [RealWorld](https://github.com/gothinkster/realworld) repo.
+1. **Install dependencies:**
+   ```sh
+   npm install
+   ```
+2. **Configure your environment variables:**
+   - Copy `.env.example` to `.env` and set the required values (Couchbase connection, OpenAI API key, etc.).
+3. **Start the app in development mode:**
+   ```sh
+   npm run dev
+   ```
+4. **Start the app in production mode:**
+   ```sh
+   npm start
+   ```
 
-# Getting started
+---
 
-1. install npm
-1. Run `npm install` in the project folder
-1. Run `npm run dev` for dev mode and `npm run start` for regular mode
+## Project Structure
+- `api/` - Express app entrypoint and route handlers
+- `models/` - Ottoman.js models for users, articles, comments, tags
+- `config/` - Configuration files for database, logger, security
+- `services/` - Utility services (e.g., embeddings, search)
+- `routes/` - Express route definitions
+- `public/` and `views/` - Static assets and HTML
 
-# How it works
-
-> All the routes are defined in the `routes` folder, and their corresponding controllers are implemented in the `controllers` folder.
-
-# Design Choices and Tradeoffs
-
-- Only one `access_token_secret` is used for all the accounts registration and login. Drawback: data can be forged if this secret is leaked
-- Included array structures, e.g. list of comments in the article model and favorited articles in the user model. Drawback: not good for scalability
-- Usernames are case-sensitive
+For more details, see comments in the codebase and the book text for this chapter.
