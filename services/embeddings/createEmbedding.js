@@ -21,7 +21,7 @@ export async function createEmbedding(identifier, content, type) {
         const embedding = await generateEmbedding(content);
         
         if (type === 'article') {
-            await saveEmbedding(identifier, embedding, type);
+            await saveEmbedding(identifier, content, embedding);
             console.log(
                 `Embedding for article with ID ${identifier} saved successfully`
             );

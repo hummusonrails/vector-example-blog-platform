@@ -3,6 +3,7 @@ const { Schema, model, getModel } = require('ottoman');
 const slugify = require('slugify');
 
 const articleModel = ottoman.model('Article', {
+
     slug: {
         type: String,
         unique: true,
@@ -37,9 +38,27 @@ const articleModel = ottoman.model('Article', {
         type: [{ type: String, ref: 'Comment' }],
         default: () => [],
     },
+
+    /**
+     * Book-aligned note: For search result optimization, you may add recencyScore and popularityScore fields as follows:
+     *
+     * recencyScore: {
+     *     type: Number,
+     *     default: 0,
+     * },
+     * popularityScore: {
+     *     type: Number,
+     *     default: 0,
+     * },
+     *
+     * These fields are discussed in the book's optimization chapters for ranking search results by freshness and popularity.
+     */
+
+    // Vector embedding for this article (used for vector search)
     embedding: {
         type: [Number],
-    },
+        default: () => [],
+    }
 }, {
     timestamps: true,
 });

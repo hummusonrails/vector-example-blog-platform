@@ -6,6 +6,7 @@ const connectToCouchbase = async () => {
         bucketName: 'default',
         username: process.env.COUCHBASE_USERNAME,
         password: process.env.COUCHBASE_PASSWORD,
+        configProfile: 'wanDevelopment',
     });
 
     await ottoman.start(); 

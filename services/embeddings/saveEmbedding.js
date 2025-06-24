@@ -15,7 +15,7 @@ async function saveEmbedding(articleId, articleContent, embedding) {
 
         if (!article) {
             article = new Article({
-                slug: articleContrent.slug,
+                slug: articleContent.slug,
                 title: articleContent.title,
                 description: articleContent.description,
                 body: articleContent.body,
