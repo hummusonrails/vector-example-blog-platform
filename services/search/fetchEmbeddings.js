@@ -1,4 +1,4 @@
-import { getModel } from 'ottoman';
+const { getModel } = require('ottoman');
 
 /**
      * Fetch all stored embeddings from Couchbase.
@@ -11,16 +11,14 @@ async function getAllStoredEmbeddings() {
         const ArticleModel = getModel('Article');
         const articles = await ArticleModel.find({}, { select: ['_id', 'embedding'] });
     
-        return articles.rows.map(article => (
-            { 
-                articleId: article._id,
-                embedding: article.embedding,
-            }
-        ));
+        return articles.rows.map(article => ({
+            articleId: article._id,
+            embedding: article.embedding,
+        }));
     } catch (error) {
         console.error('Error fetching embeddings:', error.message);
         throw error; 
     }
 }
 
-export { getAllStoredEmbeddings };
+module.exports = { getAllStoredEmbeddings };
