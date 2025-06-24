@@ -26,7 +26,8 @@
     "ottoman": "^2.3.3",
     "roarr": "^7.15.0",
     "slugify": "^1.6.5",
-    "supertest": "^6.3.3"
+    "supertest": "^6.3.3",
+    "openai": "^4.0.0"
   },
   "devDependencies": {
     "jest": "^29.6.0",

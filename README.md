@@ -41,4 +41,14 @@ This branch contains the foundational code for Chapter 3 of "Vector Search with 
    npm start
    ```
 
+### Generating an Embedding (Chapter 3 Example)
+
+To generate a vector embedding for any string using the OpenAI API, run:
+
+```sh
+node generate_embedding.js "Your text string goes here"
+```
+
+This will output the embedding vector, the model used, and the number of tokens consumed. You must have your OpenAI API key set in your `.env` file for this to work.
+
 For more details, see comments in the codebase and the book text for this chapter.
