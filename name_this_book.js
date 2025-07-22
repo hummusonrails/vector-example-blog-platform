@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 import fs from 'fs';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -45,19 +45,42 @@ async function scrapeTitles() {
 
 async function getEmbedding(text) {
   console.log(`Generating embedding for: "${text}"`);
-  const res = await fetch('https://api.openai.com/v1/embeddings', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      input: text,
-      model: 'text-embedding-3-small',
-    }),
-  });
-  const data = await res.json();
-  return data.data[0].embedding;
+  try {
+    const res = await fetch('https://api.openai.com/v1/embeddings', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        input: text,
+        model: 'text-embedding-3-small',
+      }),
+    });
+    
+    if (!res.ok) {
+      console.error(`API request failed with status ${res.status}: ${res.statusText}`);
+      return null;
+    }
+    
+    const data = await res.json();
+    
+    // Check if the response has the expected structure
+    if (!data || !data.data || !Array.isArray(data.data) || data.data.length === 0) {
+      console.error('Unexpected API response structure:', JSON.stringify(data, null, 2));
+      return null;
+    }
+    
+    if (!data.data[0].embedding) {
+      console.error('No embedding found in API response:', JSON.stringify(data.data[0], null, 2));
+      return null;
+    }
+    
+    return data.data[0].embedding;
+  } catch (error) {
+    console.error(`Error generating embedding for "${text}":`, error.message);
+    return null;
+  }
 }
 
 async function embedTitles(books) {
@@ -69,10 +92,20 @@ async function embedTitles(books) {
     console.log(` (${i + 1}/${books.length}) ${fullTitle}`);
     return getEmbedding(fullTitle).then(embedding => {
       book.embedding = embedding;
+      return book;
     });
   });
-  await Promise.all(promises);
-  return books;
+  
+  const booksWithEmbeddings = await Promise.all(promises);
+  
+  // Filter out books that failed to get embeddings
+  const validBooks = booksWithEmbeddings.filter(book => book.embedding !== null);
+  
+  if (validBooks.length < books.length) {
+    console.log(`Warning: ${books.length - validBooks.length} books failed to get embeddings and were excluded.`);
+  }
+  
+  return validBooks;
 }
 
 function cosineSimilarity(a, b) {
