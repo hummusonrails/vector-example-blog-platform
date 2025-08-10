@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Chapter 3: Foundation of the Express App
 
 This branch contains the foundational code for Chapter 3 of "Vector Search with JavaScript." Here, you’ll find the initial Express app structure, setup for embeddings, and the base project layout that subsequent chapters will build upon.

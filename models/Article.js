@@ -1,9 +1,21 @@
-const ottoman = require('../services/clients/couchbaseClient');
+/**
+ * Book-aligned note: For search result optimization, you may add recencyScore and popularityScore fields as follows:
+ *
+ * recencyScore: {
+ *     type: Number,
+ *     default: 0,
+ * },
+ * popularityScore: {
+ *     type: Number,
+ *     default: 0,
+ * },
+ *
+ * These fields are discussed in the book's optimization chapters for ranking search results by freshness and popularity.
+ */
 const { Schema, model, getModel } = require('ottoman');
 const slugify = require('slugify');
 
-const articleModel = ottoman.model('Article', {
-
+const articleSchema = new Schema({
     slug: {
         type: String,
         unique: true,
@@ -38,22 +50,6 @@ const articleModel = ottoman.model('Article', {
         type: [{ type: String, ref: 'Comment' }],
         default: () => [],
     },
-
-    /**
-     * Book-aligned note: For search result optimization, you may add recencyScore and popularityScore fields as follows:
-     *
-     * recencyScore: {
-     *     type: Number,
-     *     default: 0,
-     * },
-     * popularityScore: {
-     *     type: Number,
-     *     default: 0,
-     * },
-     *
-     * These fields are discussed in the book's optimization chapters for ranking search results by freshness and popularity.
-     */
-
     // Vector embedding for this article (used for vector search)
     embedding: {
         type: [Number],
@@ -63,14 +59,13 @@ const articleModel = ottoman.model('Article', {
     timestamps: true,
 });
 
-// TODO: Implement uniqueValidator
-// articleModel.plugin(uniqueValidator);
-articleModel.pre('update', function(document){
-    document.slug = slugify(document.title, { lower: true, replacement: '-'});
+// Pre-update hook to set slug from title
+articleSchema.pre('update', function(document) {
+    document.slug = slugify(document.title, { lower: true, replacement: '-' });
 });
 
 // user is the logged-in user
-articleModel.methods.toArticleResponse = async function (user) {
+articleSchema.methods.toArticleResponse = async function (user) {
     const User = getModel('User');
     const authorObj = await User.findById(this.author);
     return {
@@ -84,27 +79,26 @@ articleModel.methods.toArticleResponse = async function (user) {
         tagList: this.tagList,
         favorited: user ? user.isFavorite(this.id) : false,
         favoritesCount: this.favoritesCount,
-        author:  authorObj.toProfileJSON(user)
-    }
-}
+        author: authorObj.toProfileJSON(user)
+    };
+};
 
-articleModel.methods.addComment = async function (commentId) {
-    if(this.comments.indexOf(commentId) === -1){
+articleSchema.methods.addComment = async function (commentId) {
+    if (this.comments.indexOf(commentId) === -1) {
         this.comments.push(commentId);
     }
     return this.save();
 };
 
-articleModel.methods.removeComment = async function (commentId) {
+articleSchema.methods.removeComment = async function (commentId) {
     const idx = this.comments.indexOf(commentId);
-    if(idx!== -1){
+    if (idx !== -1) {
         this.comments.splice(idx, 1);
     }
-
     return this.save();
 };
 
 const scope = process.env.DB_SCOPE || "_default";
-const article =  model('Article', articleModel, { scopeName: scope });
-exports.articleModel = articleModel;
-exports.Article = article;
+const Article = model('Article', articleSchema, { scopeName: scope });
+exports.articleSchema = articleSchema;
+exports.Article = Article;
