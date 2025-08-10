@@ -8,7 +8,7 @@ const cors = require('cors');
 const corsOptions = require('../config/corsOptions');
 const {setupOttoman} = require('../config/dbConnect');
 const  {Logger} = require('../config/logger');
-const searchRoutes = require('./routes/searchRoutes');
+const searchRoutes = require('../routes/searchRoutes');
 
 const log = Logger.child({
     namespace: 'Index',
