@@ -1,7 +1,6 @@
-const ottoman = require('../services/clients/couchbaseClient');
 const { Schema, model, getModel } = require('ottoman');
 
-const commentModel = ottoman.model('Comment', {
+const commentSchema = new Schema({
     body: {
         type: String,
         required: true,
@@ -18,8 +17,7 @@ const commentModel = ottoman.model('Comment', {
     timestamps: true,
 });
 
-
-commentModel.methods.toCommentResponse = async function (user) {
+commentSchema.methods.toCommentResponse = async function (user) {
     let authorObj = await getModel('User').findById(this.author);
     return {
         id: this.id,
@@ -27,13 +25,12 @@ commentModel.methods.toCommentResponse = async function (user) {
         createdAt: this.createdAt,
         updatedAt: this.updatedAt,
         author: authorObj.toProfileJSON(user)
-    }
+    };
 };
 
 const scope = process.env.DB_SCOPE || "_default";
-module.exports = { 
-    Comment: model(
-        'Comment', commentModel, { scopeName: scope }
-    ), 
-    commentModel: commentModel
+const Comment = model('Comment', commentSchema, { scopeName: scope });
+module.exports = {
+    Comment,
+    commentSchema
 };
