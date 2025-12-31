@@ -19,7 +19,7 @@ function validateText(text) {
         ); 
     }
 
-    // Define a minimum length for the text const minLength = 5; // Adjust as necessary 
+    const minLength = 5; // Adjust as necessary
     if (text.length < minLength) {
         throw new ValidationError(
             `Input text is too short, must be at least ${minLength} characters`

@@ -1,4 +1,4 @@
-import { VectorLengthError } from './errorHandlers';
+const { VectorLengthError } = require('./errorHandlers');
 
 /**
      * Function to calculate the dot product of two vectors.
@@ -13,4 +13,4 @@ function dotProduct(vectorA, vectorB) {
         return vectorA.reduce((acc, curr, idx) => acc + curr * vectorB[idx], 0); 
 }
     
-export { dotProduct };
+module.exports = { dotProduct };
