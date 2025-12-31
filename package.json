@@ -18,11 +18,13 @@
     "bcrypt": "^5.1.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
+    "couchbase": "^4.6.0",
     "cross-env": "^7.0.3",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "express-async-handler": "^1.2.0",
     "jsonwebtoken": "^9.0.1",
+    "openai": "^6.15.0",
     "ottoman": "^2.3.3",
     "roarr": "^7.15.0",
     "slugify": "^1.6.5",
@@ -35,7 +37,7 @@
   "jest": {
     "testEnvironment": "node",
     "setupFilesAfterEnv": [
-      "./__tests__/jest.setup.js"
+      "./test/jest.setup.js"
     ],
     "coveragePathIgnorePatterns": [
       "/node_modules/",
