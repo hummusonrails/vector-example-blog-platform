@@ -1,15 +1,22 @@
-import OpenAI from 'openai';
-// Importing custom error class for API errors
-import { APIError } from '../utils/errorHandlers';
-// Importing validateText utility for input validation
-import validateText from '../utils/validateText';
+const OpenAI = require('openai');
+const { APIError, ValidationError } = require('../utils/errorHandlers');
+const validateText = require('../utils/validateText');
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
-// Create an instance of OpenAIApi with the provided configuration
-const client = new OpenAI({
-    apiKey: OPENAI_API_KEY,
-});
+let client;
+
+function getClient() {
+    if (!client) {
+        if (!OPENAI_API_KEY) {
+            throw new APIError(
+                'The OPENAI_API_KEY environment variable is missing or empty'
+            );
+        }
+        client = new OpenAI({ apiKey: OPENAI_API_KEY });
+    }
+    return client;
+}
 
 // Function to generate embedding from the OpenAI API
 async function generateEmbedding(text) {
@@ -17,7 +24,7 @@ async function generateEmbedding(text) {
         validateText(text);
 
         // Making a request to OpenAI Embeddings API
-        const response = await client.embeddings.create({
+        const response = await getClient().embeddings.create({
             model: 'text-embedding-ada-002',
             input: text,
         });
