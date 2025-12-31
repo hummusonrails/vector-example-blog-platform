@@ -1,4 +1,4 @@
-import { getModel } from 'ottoman';
+const { getModel } = require('ottoman');
 
 /**
      * Fetch all stored embeddings from Couchbase.
@@ -23,4 +23,4 @@ async function getAllStoredEmbeddings() {
     }
 }
 
-export { getAllStoredEmbeddings };
+module.exports = { getAllStoredEmbeddings };
