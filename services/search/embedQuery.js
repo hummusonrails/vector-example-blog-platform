@@ -1,4 +1,4 @@
-const createEmbedding = require('../embeddings/createEmbedding');
+const { createEmbedding } = require('../embeddings/createEmbedding');
 const { performSearch } = require('./performSearch');
 const { ValidationError } = require('../utils/errorHandlers');
 
