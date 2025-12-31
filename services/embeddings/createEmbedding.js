@@ -23,7 +23,7 @@ async function createEmbedding(identifier, content, type) {
         const embedding = await generateEmbedding(content);
         
         if (type === 'article') {
-            await saveEmbedding(identifier, content, embedding);
+            await saveEmbedding(identifier, embedding);
             console.log(
                 `Embedding for article with ID ${identifier} saved successfully`
             );
@@ -37,4 +37,4 @@ async function createEmbedding(identifier, content, type) {
     }
 }
 
-module.exports = createEmbedding;
+module.exports = { createEmbedding };

@@ -1,7 +1,9 @@
 const asyncHandler = require('express-async-handler');
 const {getModel} = require('ottoman');
+const slugify = require('slugify');
 const User = getModel('User');
 const Article = getModel('Article');
+const { createEmbedding } = require('../services/embeddings/createEmbedding');
 const  {Logger} = require('../config/logger');
 const log = Logger.child({
     namespace: 'articlesController',
@@ -19,7 +21,8 @@ const createArticle = asyncHandler(async (req, res) => {
         return res.status(400).json({message: "All fields are required"});
     }
 
-    const article = await Article.create({ title, description, body });
+    const slug = slugify(title, { lower: true, replacement: '-' });
+    const article = await Article.create({ title, description, body, slug });
 
     article.author = id;
 
@@ -30,7 +33,14 @@ const createArticle = asyncHandler(async (req, res) => {
         article.tagList = localeSort;
     }
 
-    await article.save()
+    await article.save();
+
+    const embeddingContent = [title, description, body].filter(Boolean).join('\n\n');
+    try {
+        await createEmbedding(article.id, embeddingContent, 'article');
+    } catch (error) {
+        log.error({ err: error }, 'Failed to generate article embedding');
+    }
 
     return res.status(200).json({
         article: await article.toArticleResponse(author)
@@ -160,6 +170,10 @@ const updateArticle = asyncHandler(async (req, res) => {
 
     const target = await Article.findOne({ slug });
 
+    if (!target) {
+        return res.status(404).json({ message: 'Article Not Found' });
+    }
+
     log.debug(target.title);
     log.debug(req.userId);
     if (article.title) {
@@ -176,6 +190,18 @@ const updateArticle = asyncHandler(async (req, res) => {
     }
 
     await target.save();
+
+    const shouldRegenerateEmbedding = Boolean(article.title || article.description || article.body);
+    if (shouldRegenerateEmbedding) {
+        const embeddingContent = [target.title, target.description, target.body]
+            .filter(Boolean)
+            .join('\n\n');
+        try {
+            await createEmbedding(target.id, embeddingContent, 'article');
+        } catch (error) {
+            log.error({ err: error }, 'Failed to regenerate article embedding');
+        }
+    }
     const articleResponse = await target.toArticleResponse(loginUser)
     return res.status(200).json({
         article: articleResponse
