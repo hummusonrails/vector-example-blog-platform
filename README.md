@@ -52,11 +52,33 @@ Each chapter branch is carefully aligned with the book’s content.
    npm start
    ```
 
+## ✅ Known Environment
+
+- Node.js 20 LTS or 22 LTS
+
+## 🔧 Configuration
+
+Set these environment variables before starting the app:
+
+- `OPENAI_API_KEY` - OpenAI API key for embedding generation
+- `DB_ENDPOINT` - Couchbase connection string (default: `couchbase://localhost`)
+- `DB_BUCKET` - Couchbase bucket name (default: `default`)
+- `DB_USERNAME` - Couchbase username (default: `Administrator`)
+- `DB_PASSWORD` - Couchbase password (default: `password`)
+- `DB_SCOPE` - Couchbase scope name (default: `_default`)
+
+To run tests:
+
+```sh
+npm test
+```
+
 > 📚 **See the book for setup details and chapter-by-chapter walkthroughs.**
 
 ## 📦 Features by Chapter
 
 - **Vector Embeddings**: Generate and store vector representations for articles
+- **Embedding Updates**: Embeddings are generated on article create and update
 - **Vector Search**: Find articles by semantic similarity
 - **Hybrid Search**: Combine keyword and vector search
 - **Ranking & Optimization**: Weighted ranking, stop words, recency/popularity

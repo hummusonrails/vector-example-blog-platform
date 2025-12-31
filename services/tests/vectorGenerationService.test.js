@@ -1,9 +1,25 @@
-import { createEmbedding } from '../services/embeddings/createEmbedding'; import { generateEmbedding } from '../services/clients/openaiClient';
-import { saveEmbedding } from '../services/embeddings/saveEmbedding'; import validateText from '../services/utils/validateText';
+jest.mock('../clients/couchbaseClient', () => ({}));
+jest.mock('../clients/openaiClient', () => ({
+    generateEmbedding: jest.fn(),
+}));
+jest.mock('../embeddings/saveEmbedding', () => jest.fn());
+jest.mock('../utils/validateText', () => jest.fn());
 
-jest.mock('../services/clients/couchbaseClient'); jest.mock('../services/clients/openaiClient'); jest.mock('../services/embeddings/saveEmbedding'); jest.mock('../services/utils/validateText');
+const { createEmbedding } = require('../embeddings/createEmbedding');
+const { generateEmbedding } = require('../clients/openaiClient');
+const saveEmbedding = require('../embeddings/saveEmbedding');
+const validateText = require('../utils/validateText');
 
 describe('Vector Generation Service', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+        jest.spyOn(console, 'log').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+        console.log.mockRestore();
+    });
+
     it('should successfully validate, generate, and save an embedding', async () => {
         const mockArticleId = 'article123';
         const mockContent = 'This is a test article for embedding generation.';
@@ -16,7 +32,9 @@ describe('Vector Generation Service', () => {
 
         await expect(createEmbedding(mockArticleId, mockContent, 'article')).resolves.not.toThrow();
 
-        expect(validateText).toHaveBeenCalledWith(mockContent); expect(generateEmbedding).toHaveBeenCalledWith(mockContent); expect(saveEmbedding).toHaveBeenCalledWith(mockArticleId, mockEmbedding, 'article');
+        expect(validateText).toHaveBeenCalledWith(mockContent);
+        expect(generateEmbedding).toHaveBeenCalledWith(mockContent);
+        expect(saveEmbedding).toHaveBeenCalledWith(mockArticleId, mockEmbedding);
     });
 
     it('should throw a validation error for invalid input', async () => {
@@ -35,10 +53,27 @@ describe('Vector Generation Service', () => {
         const mockArticleId = 'article123';
         const mockContent = 'This is a test article for embedding generation.';
         // Mocking an error from the OpenAI API
+        validateText.mockImplementation(() => true);
         generateEmbedding.mockImplementation(() => { 
             throw new Error('OpenAI API Error');
         });
 
-        await expect(createEmbedding(mockArticleId, mockContent, 'article')).rejects.toThrow('OpenAI API Error'); expect(validateText).toHaveBeenCalledWith(mockContent); expect(generateEmbedding).toHaveBeenCalledWith(mockContent);
+        await expect(createEmbedding(mockArticleId, mockContent, 'article')).rejects.toThrow('OpenAI API Error');
+        expect(validateText).toHaveBeenCalledWith(mockContent);
+        expect(generateEmbedding).toHaveBeenCalledWith(mockContent);
+    });
+
+    it('should return embedding for query type', async () => {
+        const mockQueryId = 'query123';
+        const mockContent = 'Search query text.';
+        const mockEmbedding = [0.11, 0.22];
+
+        validateText.mockImplementation(() => true);
+        generateEmbedding.mockResolvedValue(mockEmbedding);
+
+        await expect(createEmbedding(mockQueryId, mockContent, 'query')).resolves.toEqual(mockEmbedding);
+
+        expect(validateText).toHaveBeenCalledWith(mockContent);
+        expect(generateEmbedding).toHaveBeenCalledWith(mockContent);
     });
 })

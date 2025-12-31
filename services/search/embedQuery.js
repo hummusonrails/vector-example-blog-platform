@@ -1,5 +1,6 @@
-import { createEmbedding } from '../embeddings/createEmbedding'; import { performSearch } from './performSearch';
-import { ValidationError } from '../utils/errorHandlers';
+const { createEmbedding } = require('../embeddings/createEmbedding');
+const { performSearch } = require('./performSearch');
+const { ValidationError } = require('../utils/errorHandlers');
 
 /**
      * Embeds a user query and performs a search.
@@ -27,4 +28,4 @@ async function embedAndSearch(queryId, query) {
     }
 }
 
-export { embedAndSearch };
+module.exports = { embedAndSearch };
