@@ -1,30 +1,15 @@
 'use strict';
 
-const couchbase = require('couchbase'); 
+const couchbase = require('couchbase');
+const { getDefaultInstance } = require('ottoman');
 require('dotenv').config();
 
 const {
-  DB_ENDPOINT,
-  DB_USERNAME,
-  DB_PASSWORD,
   DB_BUCKET,
   DB_SCOPE = '_default',
   DB_VECTOR_INDEX,
   DB_VECTOR_FIELD = 'embedding',
 } = process.env;
-
-let cluster;
-
-async function init() {
-  if (!cluster) {
-    cluster = await couchbase.connect(DB_ENDPOINT, {
-      username: DB_USERNAME, 
-      password: DB_PASSWORD, 
-      configProfile: 'wanDevelopment',
-    });
-  }
-  return cluster; 
-}
 
 /**
  * Perform similarity search using a Capella Vector Search index.
@@ -32,12 +17,15 @@ async function init() {
  * @returns {Promise<Array<{id: string, score: number, title?: string, description?: string}>>}
  */
 async function performSearch(queryEmbedding) {
-  const cl = await init();
+  const ottoman = getDefaultInstance();
+  if (!ottoman || !ottoman.cluster) {
+    throw new Error('Ottoman is not initialized yet');
+  }
 
   if (!DB_BUCKET) throw new Error('DB_BUCKET not set');
   if (!DB_VECTOR_INDEX) throw new Error('DB_VECTOR_INDEX not set');
 
-  const scope = cl.bucket(DB_BUCKET).scope(DB_SCOPE);
+  const scope = ottoman.cluster.bucket(DB_BUCKET).scope(DB_SCOPE);
 
   // Build the vector search request
   const searchReq = couchbase.SearchRequest.create(
