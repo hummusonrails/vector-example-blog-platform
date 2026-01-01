@@ -34,6 +34,10 @@ exports.performSearch = asyncHandler(async (req, res) => {
     return res.status(200).json({ results, count: results.length });
   } catch (error) {
     log.error(error, 'Error performing vector search');
-    return res.status(500).json({ message: 'An error occurred while processing the search' });
+    console.error('Error performing vector search:', error);
+    return res.status(500).json({
+      message: 'An error occurred while processing the search',
+      error: process.env.NODE_ENV === 'production' ? undefined : error.message,
+    });
   }
 });

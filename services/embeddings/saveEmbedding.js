@@ -1,4 +1,4 @@
-const { Article } = require('../../models/Article');
+const { getModel } = require('ottoman');
 const { ValidationError } = require('../utils/errorHandlers');
 
 // Function to save embedding and article data
@@ -10,6 +10,7 @@ async function saveEmbedding(articleId, embedding) {
     }
 
     try {
+        const Article = getModel('Article');
         const article = await Article.findById(articleId);
 
         if (!article) {
